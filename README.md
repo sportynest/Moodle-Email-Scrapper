@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Moodle Email Scraper is a Python application that scrapes email addresses from Moodle user profiles. It leverages browser cookies for authentication and navigation within the Moodle platform, extracting email addresses from user profiles and storing them in a JSON file.
+The Moodle Email Scraper is a Python application designed to scrape email addresses from Moodle user profiles within a classroom. As a member of the classroom, you can use your browser cookies for authentication and navigation within the Moodle platform. The application extracts email addresses from the user's profiles and stores them in a JSON file for easy access and management.
 
 ## Features
 
