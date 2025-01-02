@@ -8,6 +8,7 @@ The Moodle Email Scraper is a Python application designed to scrape email addres
 
 - Extracts email addresses from HTML content by identifying `mailto:` links.
 - Manages pagination to retrieve all participants in a course.
+- Uses concurrent execution to process multiple user profiles simultaneously.
 - Eliminates duplicate email addresses while maintaining order.
 - Stores extracted email addresses in a JSON file.
 - Provides configurable logging to monitor the scraping process.
@@ -17,6 +18,7 @@ The Moodle Email Scraper is a Python application designed to scrape email addres
 - Python 3.x
 - `beautifulsoup4` library
 - `requests` library
+- `concurrent.futures` (included in Python's standard library)
 
 ## Installation
 
@@ -64,6 +66,17 @@ The Moodle Email Scraper is a Python application designed to scrape email addres
     emails = scraper.scrape_course_emails(course_id)
     print(emails)
     ```
+
+### Performance Features
+
+#### Concurrent Execution
+
+The scraper utilizes Python's `concurrent.futures` module to process multiple user profiles simultaneously:
+
+- Uses ThreadPoolExecutor with 4 worker threads by default
+- Processes multiple contact URLs concurrently for faster execution
+- Implements rate limiting to prevent server overload
+- Maintains error handling and logging during concurrent operations
 
 ### Functions
 
@@ -122,12 +135,17 @@ Determines if there is a subsequent page of results.
 
 #### `_process_contacts(contacts: List[str]) -> List[str]`
 
-Processes contact URLs to extract emails.
+Processes contact URLs to extract emails using concurrent execution.
 
 - **Args:**
   - `contacts` (List[str]): List of contact URLs.
 - **Returns:**
   - `List[str]`: List of unique email addresses.
+- **Features:**
+  - Uses ThreadPoolExecutor for parallel processing
+  - Processes up to 4 contacts simultaneously
+  - Implements rate limiting between requests
+  - Maintains error handling for each contact
 
 #### `_save_emails(new_emails: List[str], email_data: Dict)`
 

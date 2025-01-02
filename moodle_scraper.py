@@ -6,6 +6,7 @@ import random
 import json
 from urllib.parse import unquote
 from typing import List, Dict
+import concurrent.futures
 
 # Configure logging
 logging.basicConfig(
@@ -135,20 +136,37 @@ class MoodleScraper:
         }))
 
     def _process_contacts(self, contacts: List[str]) -> List[str]:
-        """Processes contact URLs to extract emails."""
+        """
+        Processes contact URLs to extract emails using concurrent execution.
+        """
         all_emails = []
         
-        for contact_url in contacts:
-            try:
-                response = requests.get(contact_url, cookies=self.cookies)
-                response.raise_for_status()
-                emails = self.extract_emails(response.text)
-                all_emails.extend(emails)
-                time.sleep(random.uniform(0.5, 1))
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+          
+            def process_single_contact(contact_url):
+                try:
+                    response = requests.get(contact_url, cookies=self.cookies)
+                    response.raise_for_status()
+                    emails = self.extract_emails(response.text)
+                    return emails
+                except Exception as e:
+                    logging.error(f"Error processing contact {contact_url}: {e}")
+                    return []
+
+
+            future_to_contact = {
+                executor.submit(process_single_contact, contact): contact 
+                for contact in contacts
+            }
+            
+            # Process completed futures as they finish
+            for future in concurrent.futures.as_completed(future_to_contact):
+                contact_emails = future.result()
+                all_emails.extend(contact_emails)
                 
-            except Exception as e:
-                logging.error(f"Error processing contact {contact_url}: {e}")
-                continue
+           
+                time.sleep(random.uniform(0.2, 0.5))
                 
         return list(dict.fromkeys(all_emails))
 
